@@ -11,10 +11,12 @@ func Uniq(values []string, params Params) []string {
 	if params.Count {
 		return showCount(table, count)
 	}
-	if params.Uniq {
+	if params.Double {
+		return showUniqless(table, count)
+	} else if params.Uniq {
 		return showUniq(table, count)
 	} else {
-		return showUniqless(table, count)
+		return table
 	}
 }
 
@@ -34,21 +36,28 @@ func getUnique(table []string, caseFlag bool, FieldsOffset, CharOffset int) ([]s
 	}
 
 	check := func(input string) string {
-		if CharOffset > len(input) {
-			input = input[CharOffset-1:]
-		}
+
 		str := strings.Split(input, " ")
-		if FieldsOffset > len(str) {
-			str = str[FieldsOffset-1:]
+		if FieldsOffset < len(str) {
+			str = str[FieldsOffset:]
 		}
-		return strings.Join(str, " ")
+		input = strings.Join(str, " ")
+		if CharOffset != 0 && CharOffset < len(input) {
+			return input[CharOffset:]
+		}
+		return input
 	}
 	if caseFlag {
 		check = func(input string) string {
-			input = input[CharOffset:]
 			str := strings.Split(input, " ")
-			str = str[FieldsOffset:]
-			return strings.ToLower(strings.Join(str, " "))
+			if FieldsOffset < len(str) {
+				str = str[FieldsOffset:]
+			}
+			input = strings.Join(str, " ")
+			if CharOffset != 0 && CharOffset < len(input) {
+				return strings.ToLower(input[CharOffset:])
+			}
+			return strings.ToLower(input)
 		}
 	}
 
@@ -74,7 +83,7 @@ func showCount(table []string, count []int) []string {
 }
 
 func showUniq(table []string, count []int) []string {
-	uniq := make([]string,0, len(table))
+	uniq := make([]string, 0, len(table))
 	for i := 0; i < len(table); i++ {
 		if count[i] == 1 {
 			uniq = append(uniq, table[i])
